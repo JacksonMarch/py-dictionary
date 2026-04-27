@@ -2,7 +2,7 @@ from typing import Any, Optional
 
 
 class Node:
-    def __init__(self, key: Any, hash_val: int, value: Any):
+    def __init__(self, key: Any, hash_val: int, value: Any) -> None:
         self.key = key
         self.hash = hash_val
         self.value = value
