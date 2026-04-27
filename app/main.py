@@ -89,9 +89,9 @@ class Dictionary:
 
     def pop(self, key: Any, default: Any = _NO_DEFAULT) -> Any:
         try:
-            val = self.__getitem__(key)
+            popped_value = self.__getitem__(key)
             self.__delitem__(key)
-            return val
+            return popped_value
         except KeyError:
             if default is not _NO_DEFAULT:
                 return default
