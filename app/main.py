@@ -1,4 +1,7 @@
-from typing import Any, Optional
+from typing import Any, Optional, Iterator
+
+
+_NO_DEFAULT = object()
 
 
 class Node:
@@ -51,4 +54,58 @@ class Dictionary:
             if self.table[index].key == key:
                 return self.table[index].value
             index = (index + 1) % self.capacity
-        raise KeyError(key)
+        raise KeyError(f"Key {key} not found in dictionary")
+
+    def clear(self) -> None:
+        self.capacity = 8
+        self.size = 0
+        self.table: list[Optional[Node]] = [None] * self.capacity
+
+    def __delitem__(self, key: Any) -> None:
+        hash_val = hash(key)
+        index = hash_val % self.capacity
+
+        while self.table[index] is not None:
+            if self.table[index].key == key:
+                self.table[index] = None
+                self.size -= 1
+
+                index = (index + 1) % self.capacity
+                while self.table[index] is not None:
+                    node_to_rehash = self.table[index]
+                    self.table[index] = None
+                    self.size -= 1
+                    self.__setitem__(node_to_rehash.key, node_to_rehash.value)
+                    index = (index + 1) % self.capacity
+                return
+            index = (index + 1) % self.capacity
+        raise KeyError(f"Key {key} not found in dictionary")
+
+    def get(self, key: Any, default: Any = None) -> Any:
+        try:
+            return self.__getitem__(key)
+        except KeyError:
+            return default
+
+    def pop(self, key: Any, default: Any = _NO_DEFAULT) -> Any:
+        try:
+            val = self.__getitem__(key)
+            self.__delitem__(key)
+            return val
+        except KeyError:
+            if default is not _NO_DEFAULT:
+                return default
+            raise KeyError(f"Key {key} not found in dictionary")
+
+    def update(self, other: Any) -> None:
+        if hasattr(other, "items"):
+            for key, value in other.items():
+                self.__setitem__(key, value)
+        else:
+            for key, value in other:
+                self.__setitem__(key, value)
+
+    def __iter__(self) -> Iterator[Any]:
+        for node in self.table:
+            if node is not None:
+                yield node.key
